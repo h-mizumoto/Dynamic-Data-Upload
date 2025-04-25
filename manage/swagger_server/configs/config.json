@@ -1,0 +1,5 @@
+{
+        "bucket_name": "test-bucket",
+        "endpoint_url": "https://test.test.com",
+        "max_count": 10
+}

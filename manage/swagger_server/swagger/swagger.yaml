@@ -1,0 +1,332 @@
+openapi: 3.0.1
+info:
+  title: 動的状態管理アプリAPI
+  description: 動的状態管理アプリAPI version 1.0.0
+  version: 1.0.0
+servers:
+- url: /api/v1
+paths:
+  /status:
+    get:
+      tags:
+      - status
+      summary: 立入り状態取得API
+      description: 立入り状態の情報（テキストデータ）を取得するためのAPI。立ち入り状態を最大10件返却する。
+      operationId: status_get
+      parameters:
+      - name: port
+        in: query
+        description: ドローンポートのID。指定したドローンポートの立ち入り状態を返却する。
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: Port1
+      - name: datetime
+        in: query
+        description: 立ち入り検知の日時。指定した日時より新しいデータを返す。
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date-time
+          example: 2024-11-22T13:50:40Z
+      responses:
+        "200":
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                type: array
+                description: 立入り状態のリスト
+                items:
+                  $ref: '#/components/schemas/status_response'
+                x-content-type: application/json
+        "400":
+          description: リクエストデータが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "401":
+          description: APIキーが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "404":
+          description: 指定したリソースが存在しない場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "500":
+          description: 内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+      x-openapi-router-controller: swagger_server.controllers.status_controller
+    post:
+      tags:
+      - status
+      summary: 立入り状態通知API
+      description: 立入り状態の情報（テキストデータ）を通知するためのAPI
+      operationId: status_post
+      requestBody:
+        description: 通知データ
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/status_request'
+        required: true
+      responses:
+        "204":
+          description: 正常終了
+        "400":
+          description: リクエストデータが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "401":
+          description: APIキーが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "404":
+          description: 指定したリソースが存在しない場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "500":
+          description: 内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+      x-openapi-router-controller: swagger_server.controllers.status_controller
+  /report/{filename}:
+    get:
+      tags:
+      - report
+      summary: レポート取得API
+      description: 立入り状態のレポートファイルをダウンロードするためのAPI
+      operationId: report_get
+      parameters:
+      - name: filename
+        in: path
+        description: レポートファイル名
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          example: reportname
+      responses:
+        "200":
+          description: 正常終了
+        "400":
+          description: リクエストデータが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "401":
+          description: APIキーが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "404":
+          description: 指定したリソースが存在しない場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "500":
+          description: 内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+      x-openapi-router-controller: swagger_server.controllers.report_controller
+    post:
+      tags:
+      - report
+      summary: レポートアップロードAPI
+      description: 立入り状態のレポートファイルをアップロードするためのAPI
+      operationId: report_post
+      parameters:
+      - name: filename
+        in: path
+        description: アップロードするレポートのファイル名
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/report_request'
+        required: true
+      responses:
+        "200":
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/report_upload_response'
+        "400":
+          description: リクエストデータが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "401":
+          description: APIキーが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "404":
+          description: 指定したリソースが存在しない場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "500":
+          description: 内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+      x-openapi-router-controller: swagger_server.controllers.report_controller
+components:
+  schemas:
+    error_response:
+      type: object
+      properties:
+        message:
+          type: string
+          description: エラーメッセージ
+    report_request:
+      type: object
+      properties:
+        report:
+          type: string
+          description: レポートファイルのバイナリデータ
+          format: binary
+    report_upload_response:
+      type: object
+      properties:
+        report_id:
+          type: string
+          description: レポートの識別子
+          example: 123456789ABCD
+      example:
+        report_id: 123456789ABCD
+    status_event:
+      required:
+      - detect
+      - id
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          description: 障害物の識別子
+          example: car-1
+        type:
+          type: string
+          description: 障害物の種別
+          example: car
+        detect:
+          type: boolean
+          description: 障害物を検知したか、障害物がなくなったかを示す
+          example: true
+        location:
+          type: string
+          description: 位置情報
+          example: "30.123456789012, 130.1234123456789012"
+      example:
+        detect: true
+        location: "30.123456789012, 130.123456789012"
+        id: car-1
+        type: car
+    status_response:
+      type: object
+      properties:
+        port:
+          type: string
+          description: ドローンポートを識別する値
+          example: Port1
+        datetime:
+          type: string
+          description: 立入り検知の日時
+          format: date-time
+          example: 2024-11-22T13:50:40Z
+        detect:
+          type: boolean
+          description: 立入り状態の代表値
+          example: true
+        event:
+          type: array
+          description: 立入り検知の情報
+          items:
+            $ref: '#/components/schemas/status_event'
+        report_endpoint:
+          type: string
+          description: レポートファイルのエンドポイント
+          example: https://xxxxx
+      example:
+        datetime: 2024-11-22T13:50:40Z
+        port: Port1
+        detect: true
+        report_endpoint: https://xxxxx
+        event:
+        - detect: true
+          location: "30.123456789012, 130.123456789012"
+          id: car-1
+          type: car
+        - detect: true
+          location: "30.123456789012, 130.123456789012"
+          id: car-1
+          type: car
+    status_request:
+      required:
+      - datetime
+      - detect
+      - event
+      - port
+      type: object
+      properties:
+        port:
+          type: string
+          description: ドローンポートを識別する値
+          example: Port1
+        datetime:
+          type: string
+          description: 立入り検知の日時
+          format: date-time
+          example: 2024-11-22T13:50:40Z
+        detect:
+          type: boolean
+          description: 立入り状態の代表値
+          example: true
+        event:
+          type: array
+          description: 立入り検知の情報
+          items:
+            $ref: '#/components/schemas/status_event'
+        report_id:
+          type: string
+          description: レポートファイルの識別子
+          example: 123456789ABCD
+

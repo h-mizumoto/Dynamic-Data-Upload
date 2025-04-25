@@ -1,0 +1,117 @@
+openapi: 3.0.1
+info:
+  title: 状態通知機能API
+  description: 動的状態管理アプリで使用する状態通知機能の内部API version 1.0.0
+  version: 1.0.0
+servers:
+- url: /api/v1
+paths:
+  /status:
+    post:
+      tags:
+      - status
+      summary: 立入り状態通知API
+      description: 立入り状態の情報（テキストデータ）を通知するためのAPI
+      operationId: status_post
+      requestBody:
+        description: 通知データ
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/status_request'
+        required: true
+      responses:
+        "204":
+          description: 正常終了
+        "400":
+          description: リクエストデータが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "401":
+          description: APIキーが不正な場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "404":
+          description: 指定したリソースが存在しない場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "500":
+          description: 内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+      x-openapi-router-controller: swagger_server.controllers.status_controller
+components:
+  schemas:
+    error_response:
+      type: object
+      properties:
+        message:
+          type: string
+          description: エラーメッセージ
+    status_event:
+      required:
+      - detect
+      - id
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          description: 障害物の識別子
+          example: car-1
+        type:
+          type: string
+          description: 障害物の種別
+          example: car
+        detect:
+          type: boolean
+          description: 障害物を検知したか、障害物がなくなったかを示す
+          example: true
+        location:
+          type: string
+          description: 位置情報
+          example: "30.123456789012, 130.1234123456789012"
+      example:
+        detect: true
+        location: "30.123456789012, 130.123456789012"
+        id: car-1
+        type: car
+    status_request:
+      required:
+      - datetime
+      - detect
+      - event
+      - port
+      type: object
+      properties:
+        port:
+          type: string
+          description: ドローンポートを識別する値
+          example: Port1
+        datetime:
+          type: string
+          description: 立入り検知の日時
+          format: date-time
+          example: 2024-11-22T13:50:40Z
+        detect:
+          type: boolean
+          description: 立入り状態の代表値
+          example: true
+        event:
+          type: array
+          description: 立入り検知の情報
+          items:
+            $ref: '#/components/schemas/status_event'
+        report_endpoint:
+          type: string
+          description: レポートファイルのエンドポイント
+          example: https://xxxxxx/xxxx
+
